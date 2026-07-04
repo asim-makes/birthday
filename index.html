@@ -28,7 +28,7 @@
     margin:0; padding:0; height:100%;
     font-family:'Quicksand', sans-serif;
     color: var(--plum);
-    overflow-x:hidden;
+    overflow:hidden;
   }
 
   body{
@@ -75,12 +75,16 @@
     opacity:0;
     pointer-events:none;
     transition: opacity 0.6s ease;
-    overflow-y:auto;
+    overflow:hidden;
   }
   .stage.active{
     opacity:1;
     pointer-events:auto;
     position:relative;
+  }
+
+  #stage-about{
+    overflow:hidden;
   }
 
   #ambient{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
@@ -194,6 +198,9 @@
     border-radius: 28px;
     box-shadow: 0 18px 40px -18px rgba(0,0,0,0.12);
     text-align:left;
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   .about-panel h2{ margin-bottom: 14px; }
   .placeholder-note{ color: var(--plum); opacity:0.8; font-size: 14px; margin-bottom: 18px; }
@@ -338,7 +345,7 @@
     <div id="tulip-field"></div>
 
     <div class="stage-buttons">
-      <button class="btn btn-gold" id="growBtn">🌷 Want a tulip?</button>
+      <button class="btn btn-gold" id="growBtn">Want a tulip?</button>
       <button class="btn" id="moreAboutBtn">More about you</button>
       <button class="btn" id="continueBtn">Okay but wait, one more thing →</button>
     </div>
@@ -398,10 +405,10 @@
   <!-- STAGE 3: THE QUESTION -->
   <section id="stage-ask" class="stage">
     <h2 class="ask-title">One more thing... ☕</h2>
-    <p class="ask-sub" id="askSub">Would you like to go for a coffee sometime?</p>
+    <p class="ask-sub" id="askSub">Would you like to go for a coffee tomorrow?</p>
     <div id="question-box">
       <div class="btn-row">
-        <button class="btn" id="yes-btn">Yes 💛</button>
+        <button class="btn" id="yes-btn">Yes</button>
         <button class="btn btn-ghost" id="no-btn">No</button>
       </div>
     </div>
@@ -410,10 +417,10 @@
 
   <!-- STAGE 4: FINAL -->
   <section id="stage-final" class="stage">
-    <div class="final-badge">🎉</div>
-    <h2 class="final-title">Knew you'd say yes.</h2>
+    <div class="final-badge">💕</div>
+    <h2 class="final-title">Tha thiyo yes bhancheu bhanera.</h2>
     <div class="final-msg" id="finalMsg">Loading your message...</div>
-    <div class="final-sign">— see you soon, and happy birthday again 🌷</div>
+    <div class="final-sign">— see you soon, and happy birthday again</div>
   </section>
 
 </div>
@@ -422,7 +429,7 @@
 /* ================= CONFIG — edit these two lines for your friend ================= */
 const CONFIG = {
   friendName: "Shrishaaaa",  // <-- put her name here, e.g. "Priya"
-  finalMessage: "Consider this an official invitation. I'll pick the tulips, you pick the coffee shop. Happy birthday — here's to cake today and coffee soon. 🌷☕"
+  finalMessage: "Abba yes bhanihaleu timiley......bholi lina auchu timilai. And again Happy birthdayyyy to the most beauitful person. ☕"
 };
 /* =================================================================================== */
 
