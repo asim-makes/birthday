@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>A Little Something For You 🎁</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ DESIGN TOKENS — birthday party palette, not a love letter ============ */
+  :root{
+    --red: #E63946;        /* bright heart red — used as an accent, not a wash */
+    --red-deep: #B32837;
+    --rose: #FF6F91;       /* party pink */
+    --rose-soft: #FFC6D0;
+    --gold: #FFB238;       /* candle / confetti gold */
+    --gold-deep: #E8922A;
+    --plum: #4A1E2B;       /* text */
+    --ivory: #FFF9F5;      /* card surfaces — warm, not stark white */
+    --green: #4F7942;
+    --green-dark: #2F5A2C;
+    --shadow: rgba(179, 40, 55, 0.20);
+  }
+
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body{
+    margin:0; padding:0; height:100%;
+    font-family:'Quicksand', sans-serif;
+    color: var(--plum);
+    overflow-x:hidden;
+  }
+
+  body{
+    /* layered radial blobs of red / gold / rose over a warm base = birthday, not Valentine's */
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255,178,56,0.38), transparent 42%),
+      radial-gradient(circle at 88% 12%, rgba(230,57,70,0.30), transparent 46%),
+      radial-gradient(circle at 82% 85%, rgba(255,111,145,0.35), transparent 48%),
+      radial-gradient(circle at 10% 88%, rgba(230,57,70,0.20), transparent 45%),
+      linear-gradient(160deg, #FFEFE0 0%, #FFDCC9 45%, #FFC9C6 100%);
+    background-attachment: fixed;
+  }
+
+  h1,h2,h3, .display{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    margin:0;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count:1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  #app{
+    position:relative;
+    width:100%;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+    overflow:hidden;
+  }
+
+  .stage{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding: 32px 20px;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.6s ease;
+    overflow-y:auto;
+  }
+  .stage.active{
+    opacity:1;
+    pointer-events:auto;
+    position:relative;
+  }
+
+  #ambient{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .drift{ position:absolute; top:-40px; opacity:0.55; animation: driftDown linear infinite; }
+  @keyframes driftDown{
+    from{ transform: translateY(-10vh) rotate(0deg); }
+    to{ transform: translateY(110vh) rotate(360deg); }
+  }
+
+  /* ============ STAGE 1 : GIFT BOX ============ */
+  #stage-gift{ z-index:2; cursor:pointer; }
+  .gift-wrap{ position:relative; width: min(240px, 60vw); height: min(240px, 60vw); transition: transform 0.15s ease; }
+  .gift-wrap:active{ transform: scale(0.97); }
+  .box-bounce{ animation: bounce 2.6s ease-in-out infinite; }
+  @keyframes bounce{
+    0%,100%{ transform: translateY(0) rotate(-1.5deg); }
+    50%{ transform: translateY(-10px) rotate(1.5deg); }
+  }
+  .box-body{
+    position:absolute; left:6%; right:6%; bottom:0; top:32%;
+    background: linear-gradient(155deg, var(--red) 0%, var(--red-deep) 100%);
+    border-radius: 10px;
+    box-shadow: 0 24px 50px -12px var(--shadow);
+  }
+  .box-lid{
+    position:absolute; left:0; right:0; top:22%; height:18%;
+    background: linear-gradient(155deg, var(--red-deep), #7A1B26);
+    border-radius: 8px;
+    transform-origin: 20% 100%;
+    transition: transform 0.9s cubic-bezier(.34,1.56,.64,1), opacity 0.6s ease 0.3s;
+    box-shadow: 0 10px 20px -6px var(--shadow);
+  }
+  .ribbon-v{ position:absolute; left:50%; top:22%; bottom:0; width:14%; transform: translateX(-50%); background: var(--gold); }
+  .ribbon-h{
+    position:absolute; left:6%; right:6%; top: 22%; height:18%;
+    background: var(--gold); border-radius:8px;
+    transition: transform 0.6s ease 0.15s, opacity 0.5s ease 0.15s;
+  }
+  .bow{
+    position:absolute; left:50%; top:8%; width:34%; height:20%; transform: translateX(-50%);
+    transition: transform 0.7s cubic-bezier(.34,1.56,.64,1), opacity 0.5s ease;
+  }
+  .bow svg{ width:100%; height:100%; overflow:visible; }
+
+  .gift-wrap.opened .box-lid{ transform: translate(30px,-70px) rotate(-45deg); opacity:0; }
+  .gift-wrap.opened .ribbon-h{ transform: translateY(-70px); opacity:0; }
+  .gift-wrap.opened .bow{ transform: translate(-50%, -90px) rotate(25deg) scale(0.7); opacity:0; }
+  .gift-wrap.opened .box-body{ animation: popOpen 0.5s ease 0.35s both; }
+  @keyframes popOpen{ 0%{transform:scale(1);} 40%{transform:scale(1.05);} 100%{transform:scale(1); filter:brightness(1.06);} }
+  .glow-burst{
+    position:absolute; inset:-40%; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,214,178,0) 60%);
+    opacity:0; pointer-events:none;
+  }
+  .gift-wrap.opened .glow-burst{ animation: burst 0.7s ease-out 0.3s both; }
+  @keyframes burst{ 0%{opacity:0; transform:scale(0.2);} 40%{opacity:1;} 100%{opacity:0; transform:scale(1.4);} }
+
+  .hint{ margin-top: 28px; font-weight:600; letter-spacing:0.02em; color: var(--red-deep); font-size: clamp(15px, 4vw, 18px); animation: pulseHint 1.8s ease-in-out infinite; }
+  @keyframes pulseHint{ 0%,100%{opacity:0.6;} 50%{opacity:1;} }
+
+  /* ============ STAGE 2 : WISH + TULIPS ============ */
+  #stage-wish{ z-index:1; width:100%; max-width:640px; }
+  .eyebrow{ font-family:'Quicksand'; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; font-size:12px; color: var(--red); margin-bottom:10px; }
+  .wish-title{ font-size: clamp(34px, 9vw, 58px); color: var(--red-deep); line-height:1.05; font-style:italic; }
+  .wish-title .name{ color: var(--red); font-style:normal; display:block; font-size: clamp(40px, 11vw, 70px); }
+  .wish-sub{ margin-top:14px; font-size: clamp(15px, 4vw, 18px); color: var(--plum); opacity:0.85; max-width: 420px; }
+
+  #tulip-field{ position:relative; width:100%; height: clamp(150px, 30vw, 230px); margin-top: 18px; }
+  #tulip-field svg{ position:absolute; bottom:0; overflow:visible; }
+
+  .tulip-grow{ transform-origin: 50% 100%; transform: scaleY(0); animation: growTulip 0.9s cubic-bezier(.25,1,.4,1) forwards; }
+  @keyframes growTulip{
+    0%{ transform: scaleY(0) rotate(var(--tilt, 0deg)); opacity:0; }
+    60%{ opacity:1; }
+    100%{ transform: scaleY(1) rotate(var(--tilt, 0deg)); opacity:1; }
+  }
+  .tulip-sway{ animation: sway 3.6s ease-in-out infinite; transform-origin: 50% 100%; }
+  @keyframes sway{
+    0%,100%{ transform: rotate(var(--tilt, 0deg)); }
+    50%{ transform: rotate(calc(var(--tilt, 0deg) + 3deg)); }
+  }
+
+  .btn{
+    font-family:'Quicksand'; font-weight:700; font-size:16px; border:none; border-radius: 999px;
+    padding: 14px 34px; cursor:pointer; color: var(--ivory);
+    background: linear-gradient(135deg, var(--red), var(--red-deep));
+    box-shadow: 0 12px 24px -8px var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn:hover{ transform: translateY(-2px); box-shadow: 0 16px 30px -8px var(--shadow); }
+  .btn:active{ transform: translateY(0) scale(0.97); }
+  .btn-ghost{ background: transparent; color: var(--red-deep); border: 2px solid var(--red); }
+  .btn-gold{ background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color:#4A2F0B; }
+
+  .stage-buttons{ display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin-top: 26px; }
+
+  #tulip-showcase{
+    margin-top: 24px;
+    width: 100%;
+    max-width: 320px;
+    background: rgba(255,224,214,0.42);
+    border: 1px dashed rgba(230,57,70,0.22);
+    border-radius: 22px;
+    padding: 18px 12px 14px;
+  }
+  .about-panel{
+    margin-top: 28px;
+    padding: 24px 22px;
+    background: rgba(255,244,238,0.76);
+    border: 1px solid rgba(230,57,70,0.16);
+    border-radius: 28px;
+    box-shadow: 0 18px 40px -18px rgba(0,0,0,0.12);
+    text-align:left;
+  }
+  .about-panel h2{ margin-bottom: 14px; }
+  .placeholder-note{ color: var(--plum); opacity:0.8; font-size: 14px; margin-bottom: 18px; }
+  .image-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+    align-items: stretch;
+  }
+  .image-placeholder{
+    min-height: 140px;
+    aspect-ratio: 1 / 1;
+    overflow:hidden;
+    border-radius: 20px;
+    border: 1px dashed rgba(179,40,55,0.25);
+    background: rgba(255,255,255,0.18);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color: rgba(74,30,43,0.75);
+    font-weight:700;
+    font-size: 13px;
+    position: relative;
+  }
+  .image-placeholder img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 20px;
+  }
+  .image-placeholder:empty::before{
+    content: 'Image placeholder';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(74,30,43,0.75);
+    opacity: 0.75;
+    pointer-events: none;
+    font-size: 13px;
+  }
+  .text-placeholder{
+    border-radius: 20px;
+    border: 1px dashed rgba(179,40,55,0.25);
+    background: rgba(255,255,255,0.18);
+    padding: 16px;
+    margin-bottom: 16px;
+    color: var(--plum);
+    line-height: 1.7;
+    min-height: 90px;
+  }
+  .bullet-placeholder{
+    padding: 16px 20px;
+    border-radius: 20px;
+    border: 1px dashed rgba(179,40,55,0.25);
+    background: rgba(255,255,255,0.18);
+    color: var(--plum);
+  }
+  .bullet-placeholder li{ margin-bottom: 10px; }
+  #showcase-tulip{
+    position:relative;
+    height: clamp(180px, 40vw, 260px);
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  #showcase-tulip svg{ overflow:visible; }
+  .showcase-caption{ margin-top:8px; font-size:13px; color: var(--red-deep); font-weight:600; opacity:0.8; }
+  .sparkle{
+    position:absolute; pointer-events:none;
+    animation: sparklePop 0.9s ease-out forwards;
+  }
+  @keyframes sparklePop{
+    0%{ transform: scale(0) rotate(0deg); opacity:1; }
+    60%{ transform: scale(1.1) rotate(90deg); opacity:1; }
+    100%{ transform: scale(0.4) rotate(160deg); opacity:0; }
+  }
+
+  /* ============ STAGE 3 : THE QUESTION ============ */
+  #stage-ask{ z-index:1; width:100%; max-width:520px; }
+  .ask-title{ font-size: clamp(26px, 7vw, 36px); color: var(--red-deep); }
+  .ask-sub{ margin-top:10px; font-size: clamp(14px, 4vw, 17px); opacity:0.8; min-height: 44px; }
+  #question-box{
+    position:relative; width:100%; height: clamp(180px, 40vw, 240px); margin-top: 18px;
+    border-radius: 24px; background: rgba(255,249,245,0.55); border: 1px dashed rgba(230,57,70,0.35);
+  }
+  .btn-row{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:22px; }
+  #yes-btn{ position:relative; z-index:2; transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease; }
+  #no-btn{ position:relative; z-index:2; transition: top 0.32s cubic-bezier(.34,1.56,.64,1), left 0.32s cubic-bezier(.34,1.56,.64,1), transform 0.2s ease; }
+  #no-btn.roaming{ position:absolute; }
+  .attempt-counter{ margin-top: 16px; font-size:13px; color: var(--red-deep); opacity:0.75; font-weight:600; min-height: 18px; }
+
+  /* ============ STAGE 4 : FINAL MESSAGE ============ */
+  #stage-final{ z-index:1; width:100%; max-width:560px; }
+  .final-badge{ font-size: 44px; margin-bottom: 6px; }
+  .final-title{ font-size: clamp(28px, 7.5vw, 42px); color: var(--red-deep); }
+  .final-msg{
+    margin-top: 16px; font-size: clamp(15px, 4vw, 18px); line-height:1.7; color: var(--plum);
+    background: var(--ivory); border-radius: 20px; padding: 26px 24px;
+    box-shadow: 0 18px 40px -14px var(--shadow); border: 1px solid rgba(230,57,70,0.12);
+  }
+  .final-sign{ margin-top: 18px; font-family:'Fraunces'; font-style:italic; font-weight:500; color: var(--red); font-size: clamp(16px, 4vw, 19px); }
+
+  #confetti-layer{ position:fixed; inset:0; pointer-events:none; z-index:5; overflow:hidden; }
+  .confetti-piece{ position:absolute; top:-24px; will-change: transform; animation: confettiFall linear forwards; }
+  @keyframes confettiFall{ to{ transform: translateY(110vh) rotate(720deg); opacity:0.9; } }
+
+  @media (max-width: 420px){ #question-box{ height: 220px; } }
+</style>
+</head>
+<body>
+
+<div id="ambient"></div>
+<div id="confetti-layer"></div>
+
+<div id="app">
+
+  <!-- STAGE 1: GIFT -->
+  <section id="stage-gift" class="stage active">
+    <div class="gift-wrap box-bounce" id="giftWrap">
+      <div class="glow-burst"></div>
+      <div class="box-body"></div>
+      <div class="ribbon-v"></div>
+      <div class="ribbon-h"></div>
+      <div class="bow">
+        <svg viewBox="0 0 100 60">
+          <path d="M50 30 C 30 -10, -10 5, 20 30 C -10 55, 30 70, 50 30 Z" fill="#FFB238"/>
+          <path d="M50 30 C 70 -10, 110 5, 80 30 C 110 55, 70 70, 50 30 Z" fill="#FFB238"/>
+          <circle cx="50" cy="30" r="9" fill="#B32837"/>
+        </svg>
+      </div>
+    </div>
+    <div class="hint">tap the gift to open it 🎁</div>
+  </section>
+
+  <!-- STAGE 2: WISH -->
+  <section id="stage-wish" class="stage">
+    <div class="eyebrow">for you only</div>
+    <h1 class="wish-title">Happy Birthday<span class="name" id="nameSlot">Friend</span></h1>
+    <p class="wish-sub">A whole garden bloomed just to say it properly. Hope your day is as lovely as you are.</p>
+    <div id="tulip-field"></div>
+
+    <div class="stage-buttons">
+      <button class="btn btn-gold" id="growBtn">🌷 Want a tulip?</button>
+      <button class="btn" id="moreAboutBtn">More about you</button>
+      <button class="btn" id="continueBtn">Okay but wait, one more thing →</button>
+    </div>
+
+    <div id="tulip-showcase" hidden>
+      <div id="showcase-tulip"></div>
+      <div class="showcase-caption">Freshly grown, just for you.</div>
+    </div>
+  </section>
+
+  <!-- STAGE 2.5: ABOUT PLACEHOLDER -->
+  <section id="stage-about" class="stage">
+    <div class="eyebrow">This is you</div>
+    <h2 class="wish-title">More about <span class="name" id="aboutName">Shrishu</span></h2>
+    <!-- <p class="placeholder-note">Replace these placeholders with your own images, story, and traits. Use it to add more detail about the birthday person.</p> -->
+
+    <div class="about-panel">
+      <div class="image-grid">
+        <div class="image-placeholder"><img src = "1.png"></div>
+        <div class="image-placeholder"><img src = "2.jpg"></div>
+        <div class="image-placeholder"><img src = "3.png"></div>
+        <div class="image-placeholder"><img src = "4.png"></div>
+      </div>
+
+      <div class="text-placeholder">
+        Youare one of the most caring person that I know. Timi dherai kura haru ekdum deeply soch cheu ra tesbarema jun
+        tarika ley care garcheu tyo affai ma euta ekdum rare ra beautiful gift ho. Tyo constantly care garirakhney mind
+        jasley sochya sochyai garcha, tesley time time ma overthink ra worry garna ekdum normal ho. Tara ajha ekdin ko lagi
+        you be you. You are enough, just as you are. Ani ajha ko din gifts payenau bhaney chinta lina pardaina. Timi 
+        affai afno lagi euta beautiful gift ho. You deserve all the love, gentleness, peace and calm in the world!!!!
+      </div>
+
+      <div class="bullet-placeholder">
+        <strong>Personality:</strong>
+        <ul>
+          <li>Runchiiiiiiiiiiiiiiiiiii</li>
+          <li>Highly sensitive soul</li>
+          <li>Indecisive. Decision ta linai nasakney.</li>
+          <li>Emotional</li>
+          <li>Kind-hearted</li>
+          <li>Ekdumaiiiii caring</li>
+          <li>Dherai nai sweet</li>
+          <li>Overthinker..Aru ko barema dherai sochera darayera basney</li>
+          <li>Bela bela ma kada humour diney</li>
+          <li>Arulai hasairakhney. Aru bhanda ni malai hasairakhney</li>
+          <li>Forgiving and dayalu mannnn</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="stage-buttons" style="justify-content:center; margin-top:22px;">
+      <button class="btn btn-ghost" id="backToWishBtn">Back to wish</button>
+      <button class="btn" id="continueFromAboutBtn">Continue →</button>
+    </div>
+  </section>
+
+  <!-- STAGE 3: THE QUESTION -->
+  <section id="stage-ask" class="stage">
+    <h2 class="ask-title">One more thing... ☕</h2>
+    <p class="ask-sub" id="askSub">Would you like to go for a coffee sometime?</p>
+    <div id="question-box">
+      <div class="btn-row">
+        <button class="btn" id="yes-btn">Yes 💛</button>
+        <button class="btn btn-ghost" id="no-btn">No</button>
+      </div>
+    </div>
+    <div class="attempt-counter" id="attemptCounter"></div>
+  </section>
+
+  <!-- STAGE 4: FINAL -->
+  <section id="stage-final" class="stage">
+    <div class="final-badge">🎉</div>
+    <h2 class="final-title">Knew you'd say yes.</h2>
+    <div class="final-msg" id="finalMsg">Loading your message...</div>
+    <div class="final-sign">— see you soon, and happy birthday again 🌷</div>
+  </section>
+
+</div>
+
+<script>
+/* ================= CONFIG — edit these two lines for your friend ================= */
+const CONFIG = {
+  friendName: "Shrishaaaa",  // <-- put her name here, e.g. "Priya"
+  finalMessage: "Consider this an official invitation. I'll pick the tulips, you pick the coffee shop. Happy birthday — here's to cake today and coffee soon. 🌷☕"
+};
+/* =================================================================================== */
+
+document.getElementById('nameSlot').textContent = CONFIG.friendName;
+document.getElementById('finalMsg').textContent = CONFIG.finalMessage;
+
+function goTo(id){
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ---------- ambient floating petals ---------- */
+(function ambientPetals(){
+  const layer = document.getElementById('ambient');
+  const colors = ['#E63946','#FF6F91','#FFB238','#FFC6D0'];
+  for(let i=0;i<14;i++){
+    const p = document.createElement('div');
+    p.className = 'drift';
+    const size = 6 + Math.random()*8;
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.width = size+'px';
+    p.style.height = size+'px';
+    p.style.borderRadius = '0 60% 0 60%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (14 + Math.random()*12)+'s';
+    p.style.animationDelay = (Math.random()*-20)+'s';
+    layer.appendChild(p);
+  }
+})();
+
+/* ---------- gift box open ---------- */
+const giftWrap = document.getElementById('giftWrap');
+giftWrap.addEventListener('click', () => {
+  if(giftWrap.classList.contains('opened')) return;
+  giftWrap.classList.remove('box-bounce');
+  giftWrap.classList.add('opened');
+  setTimeout(() => {
+    goTo('stage-wish');
+    growTulipField();
+  }, 900);
+});
+
+/* =========================================================================
+   REALISTIC TULIP GENERATOR — pure SVG, no libraries or frameworks needed.
+   Each tulip is built from layered, gradient-shaded petals (back petal,
+   two side petals, two front petals) rather than one flat cartoon shape,
+   which is what gives it dimension/realism. Every call randomizes size,
+   tilt, curve, and color, so no two tulips are ever identical.
+   ========================================================================= */
+let tulipUid = 0;
+
+const TULIP_PALETTE = [
+  { light:'#FFE3E6', mid:'#E63946', dark:'#8E1F2B', stem:'#4F7942', leaf:'#3F6B37' }, // heart red
+  { light:'#FFE0EA', mid:'#FF6F91', dark:'#C23A5C', stem:'#5C8A4A', leaf:'#4A7A3D' }, // party pink
+  { light:'#FFF0D6', mid:'#FFB238', dark:'#C97A1E', stem:'#4F7942', leaf:'#3F6B37' }, // gold
+  { light:'#FFF6F2', mid:'#FFD1C7', dark:'#E68A78', stem:'#5C8A4A', leaf:'#4A7A3D' }, // blush cream
+  { light:'#FBE4EA', mid:'#C9184A', dark:'#6E0F2E', stem:'#345530', leaf:'#2A4526' }  // deep crimson
+];
+
+function petalPath(w, h){
+  // teardrop/almond petal pointing up, base at (0,0), tip at (0,-h)
+  return `M 0 0
+    C ${-w*0.52} ${-h*0.22}, ${-w*0.42} ${-h*0.72}, 0 ${-h}
+    C ${w*0.42} ${-h*0.72}, ${w*0.52} ${-h*0.22}, 0 0 Z`;
+}
+
+function buildTulipSVG(size, hue, tilt){
+  const uid = tulipUid++;
+  const H = size, W = size * 0.55;
+  const stemLen = H * 0.62;
+  const headH = H - stemLen;
+  const cupBaseY = headH; // y where petals attach, svg coords from top
+
+  const gLight = `tgl-${uid}`, gMid = `tgm-${uid}`, gDark = `tgd-${uid}`, gStem = `tgs-${uid}`, gShadow = `tsh-${uid}`;
+
+  // petal sizes relative to head height
+  const back  = petalPath(W*0.62, headH*0.92);
+  const side  = petalPath(W*0.5,  headH*0.8);
+  const front = petalPath(W*0.44, headH*0.72);
+
+  const cx = W/2;
+
+  return `
+  <svg class="tulip-grow tulip-sway" style="--tilt:${tilt}deg"
+       width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" overflow="visible">
+    <defs>
+      <linearGradient id="${gDark}" x1="0" y1="1" x2="0.3" y2="0">
+        <stop offset="0%" stop-color="${hue.dark}"/>
+        <stop offset="100%" stop-color="${hue.mid}"/>
+      </linearGradient>
+      <linearGradient id="${gMid}" x1="0" y1="1" x2="0.3" y2="0">
+        <stop offset="0%" stop-color="${hue.dark}"/>
+        <stop offset="55%" stop-color="${hue.mid}"/>
+        <stop offset="100%" stop-color="${hue.light}"/>
+      </linearGradient>
+      <linearGradient id="${gLight}" x1="0" y1="1" x2="0.2" y2="0">
+        <stop offset="0%" stop-color="${hue.mid}"/>
+        <stop offset="100%" stop-color="${hue.light}"/>
+      </linearGradient>
+      <linearGradient id="${gStem}" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="${hue.leaf}"/>
+        <stop offset="100%" stop-color="${hue.stem}"/>
+      </linearGradient>
+      <radialGradient id="${gShadow}" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="rgba(0,0,0,0.28)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+      </radialGradient>
+    </defs>
+
+    <!-- ground shadow -->
+    <ellipse cx="${cx}" cy="${H-2}" rx="${W*0.32}" ry="${H*0.02}" fill="url(#${gShadow})"/>
+
+    <!-- stem: gentle S-curve, not a straight line -->
+    <path d="M ${cx} ${cupBaseY + headH*0.28}
+             C ${cx + W*0.18} ${cupBaseY + stemLen*0.35}, ${cx - W*0.14} ${cupBaseY + stemLen*0.7}, ${cx} ${H}"
+          fill="none" stroke="url(#${gStem})" stroke-width="${W*0.07}" stroke-linecap="round"/>
+
+    <!-- leaf with center vein -->
+    <path d="M ${cx} ${cupBaseY + stemLen*0.42}
+             C ${cx - W*0.9} ${cupBaseY + stemLen*0.3}, ${cx - W*1.0} ${cupBaseY + stemLen*0.78}, ${cx - W*0.42} ${cupBaseY + stemLen*0.92}"
+          fill="none" stroke="url(#${gStem})" stroke-width="${W*0.16}" stroke-linecap="round" opacity="0.92"/>
+    <path d="M ${cx} ${cupBaseY + stemLen*0.42}
+             C ${cx - W*0.68} ${cupBaseY + stemLen*0.34}, ${cx - W*0.78} ${cupBaseY + stemLen*0.7}, ${cx - W*0.4} ${cupBaseY + stemLen*0.88}"
+          fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="${W*0.02}" stroke-linecap="round"/>
+
+    <!-- back petal (darkest, sets the cup silhouette) -->
+    <g transform="translate(${cx}, ${cupBaseY}) rotate(0)">
+      <path d="${back}" fill="url(#${gDark})"/>
+    </g>
+
+    <!-- two side petals, rotated outward -->
+    <g transform="translate(${cx}, ${cupBaseY}) rotate(-24)">
+      <path d="${side}" fill="url(#${gMid})" opacity="0.96"/>
+    </g>
+    <g transform="translate(${cx}, ${cupBaseY}) rotate(24)">
+      <path d="${side}" fill="url(#${gMid})" opacity="0.96"/>
+    </g>
+
+    <!-- two front petals catching the light -->
+    <g transform="translate(${cx}, ${cupBaseY}) rotate(-9)">
+      <path d="${front}" fill="url(#${gLight})" opacity="0.98"/>
+    </g>
+    <g transform="translate(${cx}, ${cupBaseY}) rotate(9)">
+      <path d="${front}" fill="url(#${gLight})" opacity="0.98"/>
+    </g>
+
+    <!-- soft highlight streak for sheen -->
+    <ellipse cx="${cx - W*0.06}" cy="${cupBaseY - headH*0.5}" rx="${W*0.07}" ry="${headH*0.28}"
+             fill="rgba(255,255,255,0.15)" transform="rotate(-9 ${cx} ${cupBaseY})"/>
+  </svg>`;
+}
+
+function growTulipField(){
+  const field = document.getElementById('tulip-field');
+  if(field.dataset.done) return;
+  field.dataset.done = '1';
+
+  const fieldWidth = field.clientWidth;
+  const count = fieldWidth < 420 ? 9 : 14;
+  let html = '';
+  for(let i=0;i<count;i++){
+    const hue = TULIP_PALETTE[Math.floor(Math.random()*TULIP_PALETTE.length)];
+    const size = 110 + Math.random()*70;
+    const leftPct = (i/count)*100 + (Math.random()*6-3);
+    const tilt = (Math.random()*10-5).toFixed(1);
+    const delay = (Math.random()*0.7 + i*0.06).toFixed(2);
+    html += `<div style="position:absolute; bottom:0; left:${leftPct}%; z-index:${Math.round(size)}; animation-delay:${delay}s">
+        ${buildTulipSVG(size, hue, tilt)}
+      </div>`;
+  }
+  field.innerHTML = html;
+  // stagger the grow animation via inline style already carries delay on wrapper;
+  // apply matching delay directly to the svg so CSS animation picks it up
+  field.querySelectorAll('div[style*="animation-delay"]').forEach(div => {
+    const delay = div.style.animationDelay;
+    const svg = div.querySelector('svg');
+    if(svg) svg.style.animationDelay = `${delay}, calc(${delay} + 0.9s)`;
+  });
+}
+
+/* ---------- "Want a tulip?" — generates one, beautifully, in real time ---------- */
+const growBtn = document.getElementById('growBtn');
+const showcase = document.getElementById('tulip-showcase');
+const showcaseTulip = document.getElementById('showcase-tulip');
+
+function sparkleBurst(container){
+  const n = 6;
+  for(let i=0;i<n;i++){
+    const s = document.createElement('div');
+    s.className = 'sparkle';
+    s.textContent = '✦';
+    s.style.color = ['#E63946','#FFB238','#FF6F91'][i % 3];
+    s.style.fontSize = (10 + Math.random()*10) + 'px';
+    s.style.left = (20 + Math.random()*60) + '%';
+    s.style.top = (10 + Math.random()*50) + '%';
+    s.style.animationDelay = (Math.random()*0.2) + 's';
+    container.appendChild(s);
+    setTimeout(() => s.remove(), 1200);
+  }
+}
+
+growBtn.addEventListener('click', () => {
+  showcase.hidden = false;
+  showcase.style.animation = 'none';
+
+  const hue = TULIP_PALETTE[Math.floor(Math.random()*TULIP_PALETTE.length)];
+  const tilt = (Math.random()*8-4).toFixed(1);
+  showcaseTulip.innerHTML = buildTulipSVG(220, hue, tilt);
+  sparkleBurst(showcaseTulip);
+
+  showcase.scrollIntoView({ behavior:'smooth', block:'nearest' });
+});
+
+/* ---------- continue to question ---------- */
+document.getElementById('continueBtn').addEventListener('click', () => goTo('stage-ask'));
+document.getElementById('moreAboutBtn').addEventListener('click', () => goTo('stage-about'));
+document.getElementById('backToWishBtn').addEventListener('click', () => goTo('stage-wish'));
+document.getElementById('continueFromAboutBtn').addEventListener('click', () => goTo('stage-ask'));
+
+/* ---------- the impossible "No" button ---------- */
+const yesBtn = document.getElementById('yes-btn');
+const noBtn = document.getElementById('no-btn');
+const questionBox = document.getElementById('question-box');
+const askSub = document.getElementById('askSub');
+const attemptCounter = document.getElementById('attemptCounter');
+
+const dodgeMessages = [
+  "Nice try. Let's aim for 'Yes' instead.",
+  "That button is decorative, actually.",
+  "The 'No' is more of a suggestion box. Try 'Yes'.",
+  "Statistically, coffee has a 100% approval rating.",
+  "It's not you, it's the button. It just won't cooperate.",
+  "Okay but hear me out: coffee. And also, yes.",
+  "This button has commitment issues. Try the other one.",
+  "At this point it's basically a game of tag. You're it.",
+  "Bold of that button to keep running. Respect.",
+  "Coffee is patiently waiting on the left."
+];
+
+let attempts = 0;
+
+function randomPointInBox(elBox, elBtn){
+  const bw = elBox.clientWidth, bh = elBox.clientHeight;
+  const btnW = elBtn.offsetWidth || 90, btnH = elBtn.offsetHeight || 46;
+  const pad = 14;
+  const maxX = Math.max(pad, bw - btnW - pad);
+  const maxY = Math.max(pad, bh - btnH - pad);
+  return { x: pad + Math.random()*maxX, y: pad + Math.random()*maxY };
+}
+
+function dodge(){
+  if(!noBtn.classList.contains('roaming')) noBtn.classList.add('roaming');
+  const pos = randomPointInBox(questionBox, noBtn);
+  noBtn.style.left = pos.x + 'px';
+  noBtn.style.top = pos.y + 'px';
+
+  attempts++;
+  askSub.textContent = dodgeMessages[Math.min(attempts-1, dodgeMessages.length-1)];
+  attemptCounter.textContent = attempts === 1 ? "1 attempt so far" : attempts + " attempts so far";
+
+  const growth = Math.min(1 + attempts*0.035, 1.35);
+  yesBtn.style.transform = `scale(${growth})`;
+  const shrink = Math.max(1 - attempts*0.02, 0.72);
+  noBtn.style.transform = `scale(${shrink})`;
+}
+
+noBtn.addEventListener('pointerenter', (e) => { if(e.pointerType === 'mouse') dodge(); });
+noBtn.addEventListener('click', (e) => { e.preventDefault(); dodge(); });
+
+yesBtn.addEventListener('click', () => { goTo('stage-final'); launchConfetti(); });
+
+/* ---------- confetti ---------- */
+function launchConfetti(){
+  const layer = document.getElementById('confetti-layer');
+  const colors = ['#E63946','#FF6F91','#FFB238','#FFC6D0','#B32837'];
+  const count = 60;
+  for(let i=0;i<count;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    const size = 6 + Math.random()*8;
+    c.style.left = Math.random()*100+'vw';
+    c.style.width = size+'px';
+    c.style.height = size*1.4+'px';
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '3px';
+    c.style.animationDuration = (2.6 + Math.random()*1.8)+'s';
+    c.style.animationDelay = (Math.random()*0.6)+'s';
+    layer.appendChild(c);
+    setTimeout(() => c.remove(), 5200);
+  }
+}
+</script>
+
+</body>
+</html>
